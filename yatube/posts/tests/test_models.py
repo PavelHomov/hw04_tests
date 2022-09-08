@@ -15,14 +15,14 @@ class PostModelTest(TestCase):
         )
         cls.post = Post.objects.create(
             author=cls.user,
-            text='Тестовый пост',
+            text='Тестовый пост 123',
             group=cls.group,
         )
 
     def test_post_str(self):
         """Проверяем, что у модели Post корректно работает __str__."""
         post = PostModelTest.post
-        expected_object_name = post.text
+        expected_object_name = 'Тестовый пост 1'
         self.assertEquals(expected_object_name, str(post))
 
     def test_verbose_name(self):

@@ -33,7 +33,8 @@ class PostCreateFormTests(TestCase):
 
     def test_create_post(self):
         """Валидная форма создает запись в Posts."""
-        post_count = Post.objects.count()
+        post_count = Post.objects.all()
+        post_count_set = set(post_count)
         form_data = {
             'text': 'Введенный в форму текст',
             'group': self.group.pk,
@@ -49,22 +50,17 @@ class PostCreateFormTests(TestCase):
                 'posts:profile', kwargs={'username': self.auth_user.username}
             )
         )
-        self.assertEqual(Post.objects.count(), post_count + 1)
-        self.assertTrue(
-            Post.objects.filter(text='Введенный в форму текст').exists()
-        )
+        post_new = Post.objects.all()
+        post_new_set = set(post_new)
+        difference = post_new_set.difference(post_count_set)
+        self.assertEqual(len(difference), 1)
+        for QuerySet in difference:
+            last_post = QuerySet
+            self.assertEqual(last_post.text, form_data['text'])
+            self.assertEqual(last_post.group.pk, form_data['group'])
 
     def test_author_edit_post(self):
         """Валидная форма изменяет запись в Posts."""
-        form_data = {
-            'text': 'Введенный в форму текст',
-            'group': self.group.pk,
-        }
-        self.authorized_client_author.post(
-            reverse('posts:post_create'),
-            data=form_data,
-            follow=True
-        )
         post = Post.objects.get(id=self.group.pk)
         self.authorized_client_author.get(f'/posts/{post.pk}/edit/')
         form_data = {
@@ -78,4 +74,5 @@ class PostCreateFormTests(TestCase):
         )
         post_edit = Post.objects.get(id=self.group.pk)
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertEqual(post_edit.text, 'Отредактированный в форме текст')
+        self.assertEqual(post_edit.text, form_data['text'])
+        self.assertEqual(post_edit.group.pk, form_data['group'])

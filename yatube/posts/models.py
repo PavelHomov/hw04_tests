@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+from .constants import POSTS_SYMBOLS
+
 User = get_user_model()
 
 
@@ -55,4 +57,4 @@ class Post(models.Model):
 
     def __str__(self) -> str:
         """Метод возвращает первые 15 символов поста."""
-        return self.text[:15]
+        return self.text[:POSTS_SYMBOLS]
