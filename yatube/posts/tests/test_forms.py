@@ -52,20 +52,23 @@ class PostCreateFormTests(TestCase):
         )
         post_new = Post.objects.all()
         post_new_set = set(post_new)
-        difference = post_new_set.difference(post_count_set)
-        self.assertEqual(len(difference), 1)
-        for QuerySet in difference:
-            last_post = QuerySet
-            self.assertEqual(last_post.text, form_data['text'])
-            self.assertEqual(last_post.group.pk, form_data['group'])
+        difference_sets_of_posts = post_new_set.difference(post_count_set)
+        self.assertEqual(len(difference_sets_of_posts), 1)
+        last_post = difference_sets_of_posts.pop()
+        self.assertEqual(last_post.text, form_data['text'])
+        self.assertEqual(last_post.group.pk, form_data['group'])
 
     def test_author_edit_post(self):
         """Валидная форма изменяет запись в Posts."""
-        post = Post.objects.get(id=self.group.pk)
-        self.authorized_client_author.get(f'/posts/{post.pk}/edit/')
+        new_group = Group.objects.create(
+            title='Тестовая группа 2',
+            slug='test-slug2',
+            description='Тестовое описание 2',
+        )
+        self.authorized_client_author.get(f'/posts/{self.post.pk}/edit/')
         form_data = {
             'text': 'Отредактированный в форме текст',
-            'group': self.group.pk,
+            'group': new_group.pk,
         }
         response = self.authorized_client_author.post(
             reverse('posts:post_edit', kwargs={'post_id': self.post.pk}),
